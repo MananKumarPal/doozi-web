@@ -164,27 +164,36 @@ export default function ApplyPage() {
           console.error('Failed to refresh user:', error);
         }
         
-        const token = localStorage.getItem('auth-token');
-        if (token) {
-          try {
-            const appStatusResponse = await fetch('/api/creator-applications/status?' + new Date().getTime(), {
-              headers: {
-                'Authorization': `Bearer ${token}`,
-              },
-              cache: 'no-store',
-            });
-            
-            if (appStatusResponse.ok) {
-              const appData = await appStatusResponse.json();
-              if (appData.hasApplication && appData.application) {
-                setApplication(appData.application);
-                window.scrollTo({ top: 0, behavior: 'smooth' });
+        const fetchApplicationStatus = async (retries = 3) => {
+          const token = localStorage.getItem('auth-token');
+          if (!token) return;
+          
+          for (let i = 0; i < retries; i++) {
+            try {
+              await new Promise(resolve => setTimeout(resolve, i * 500));
+              
+              const appStatusResponse = await fetch('/api/creator-applications/status?' + new Date().getTime(), {
+                headers: {
+                  'Authorization': `Bearer ${token}`,
+                },
+                cache: 'no-store',
+              });
+              
+              if (appStatusResponse.ok) {
+                const appData = await appStatusResponse.json();
+                if (appData.hasApplication && appData.application) {
+                  setApplication(appData.application);
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                  return;
+                }
               }
+            } catch (error) {
+              console.error('Failed to fetch application status:', error);
             }
-          } catch (error) {
-            console.error('Failed to fetch application status:', error);
           }
-        }
+        };
+        
+        await fetchApplicationStatus();
       } else {
         setErrors({ submit: responseData.error || 'Submission failed. Please try again.' });
       }
