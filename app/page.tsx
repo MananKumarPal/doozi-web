@@ -806,12 +806,14 @@ export default function HomePage() {
             {/* Brand */}
             <div className="md:col-span-2">
               <div className="flex items-center mb-6">
-                <img
-                  src="/logo.svg"
-                  alt="Doozi Logo"
-                  className="h-12 sm:h-16 w-auto"
-                  style={{ filter: 'brightness(0) invert(1)' }}
-                />
+                <Link href="/">
+                  <img
+                    src="/logo.svg"
+                    alt="Doozi Logo"
+                    className="h-12 sm:h-16 w-auto"
+                    style={{ filter: 'brightness(0) invert(1)' }}
+                  />
+                </Link>
               </div>
               <p className="text-white/70 leading-relaxed max-w-md">
                 The future of travel discovery. Find authentic experiences, plan perfect trips, and connect with travelers worldwide.

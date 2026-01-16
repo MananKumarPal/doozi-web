@@ -90,11 +90,13 @@ export default function LoginPage() {
       <div className="w-full max-w-md rounded-2xl bg-white p-6 sm:p-8 shadow-card">
         {/* Logo */}
         <div className="mb-4 sm:mb-6 flex justify-center">
-          <img
-            src="/logo.svg"
-            alt="Doozi Logo"
-            className="h-12 sm:h-16 w-auto"
-          />
+          <Link href="/">
+            <img
+              src="/logo.svg"
+              alt="Doozi Logo"
+              className="h-12 sm:h-16 w-auto"
+            />
+          </Link>
         </div>
 
         <div className="mb-4 sm:mb-6 text-center">

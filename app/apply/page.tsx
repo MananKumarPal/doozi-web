@@ -31,20 +31,26 @@ export default function ApplyPage() {
       return;
     }
 
+    setApplication(null);
+    setIsSuccess(false);
+
     const fetchApplication = async () => {
       try {
         const token = localStorage.getItem('auth-token');
         if (token) {
-          const appStatusResponse = await fetch('/api/creator-applications/status', {
+          const appStatusResponse = await fetch('/api/creator-applications/status?' + new Date().getTime(), {
             headers: {
               'Authorization': `Bearer ${token}`,
             },
+            cache: 'no-store',
           });
           
           if (appStatusResponse.ok) {
             const appData = await appStatusResponse.json();
             if (appData.hasApplication && appData.application) {
               setApplication(appData.application);
+            } else {
+              setApplication(null);
             }
           }
         }
@@ -56,6 +62,32 @@ export default function ApplyPage() {
     };
 
     fetchApplication();
+
+    const handleVisibilityChange = () => {
+      if (!document.hidden && user && !authLoading) {
+        const token = localStorage.getItem('auth-token');
+        if (token) {
+          fetch('/api/creator-applications/status?' + new Date().getTime(), {
+            headers: {
+              'Authorization': `Bearer ${token}`,
+            },
+            cache: 'no-store',
+          })
+            .then(res => res.json())
+            .then(appData => {
+              if (appData.hasApplication && appData.application) {
+                setApplication(appData.application);
+              } else {
+                setApplication(null);
+              }
+            })
+            .catch(() => {});
+        }
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
   }, [user, authLoading, router]);
 
   const validateForm = () => {
@@ -70,6 +102,8 @@ export default function ApplyPage() {
 
     if (!formData.tiktok_followers.trim()) {
       newErrors.tiktok_followers = 'TikTok follower count is required';
+    } else if (!/^\d+$/.test(formData.tiktok_followers.trim())) {
+      newErrors.tiktok_followers = 'Follower count must be a number';
     }
 
     // Instagram validation
@@ -81,6 +115,8 @@ export default function ApplyPage() {
 
     if (!formData.instagram_followers.trim()) {
       newErrors.instagram_followers = 'Instagram follower count is required';
+    } else if (!/^\d+$/.test(formData.instagram_followers.trim())) {
+      newErrors.instagram_followers = 'Follower count must be a number';
     }
 
     // Notes validation
@@ -127,16 +163,19 @@ export default function ApplyPage() {
         const token = localStorage.getItem('auth-token');
         if (token) {
           try {
-            const appStatusResponse = await fetch('/api/creator-applications/status', {
+            const appStatusResponse = await fetch('/api/creator-applications/status?' + new Date().getTime(), {
               headers: {
                 'Authorization': `Bearer ${token}`,
               },
+              cache: 'no-store',
             });
             
             if (appStatusResponse.ok) {
               const appData = await appStatusResponse.json();
               if (appData.hasApplication && appData.application) {
                 setApplication(appData.application);
+              } else {
+                setApplication(null);
               }
             }
           } catch (error) {
@@ -173,10 +212,10 @@ export default function ApplyPage() {
         <header className="bg-white border-b border-gray-200">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex items-center justify-between h-16">
-              <div className="flex items-center space-x-2">
+              <Link href="/" className="flex items-center space-x-2">
                 <MapPin className="h-7 w-7 text-brand-pink" />
                 <span className="text-2xl font-bold text-brand-black">Doozi</span>
-              </div>
+              </Link>
               <Link href="/dashboard" className="text-sm text-brand-gray hover:text-brand-pink transition-colors">
                 Back to Dashboard
               </Link>
@@ -247,10 +286,10 @@ export default function ApplyPage() {
         <header className="bg-white border-b border-gray-200">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex items-center justify-between h-16">
-              <div className="flex items-center space-x-2">
+              <Link href="/" className="flex items-center space-x-2">
                 <MapPin className="h-7 w-7 text-brand-pink" />
                 <span className="text-2xl font-bold text-brand-black">Doozi</span>
-              </div>
+              </Link>
               <Link href="/dashboard" className="text-sm text-brand-gray hover:text-brand-pink transition-colors">
                 Back to Dashboard
               </Link>
@@ -305,10 +344,10 @@ export default function ApplyPage() {
         <header className="bg-white border-b border-gray-200">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex items-center justify-between h-16">
-              <div className="flex items-center space-x-2">
+              <Link href="/" className="flex items-center space-x-2">
                 <MapPin className="h-7 w-7 text-brand-pink" />
                 <span className="text-2xl font-bold text-brand-black">Doozi</span>
-              </div>
+              </Link>
               <Link href="/dashboard" className="text-sm text-brand-gray hover:text-brand-pink transition-colors">
                 Back to Dashboard
               </Link>
@@ -363,10 +402,10 @@ export default function ApplyPage() {
         <header className="bg-white border-b border-gray-200">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex items-center justify-between h-16">
-              <div className="flex items-center space-x-2">
+              <Link href="/" className="flex items-center space-x-2">
                 <MapPin className="h-7 w-7 text-brand-pink" />
                 <span className="text-2xl font-bold text-brand-black">Doozi</span>
-              </div>
+              </Link>
               <Link href="/" className="text-sm text-brand-gray hover:text-brand-pink transition-colors">
                 Back to Home
               </Link>
@@ -493,10 +532,14 @@ export default function ApplyPage() {
                 <input
                   id="tiktok_followers"
                   type="text"
+                  inputMode="numeric"
                   value={formData.tiktok_followers}
-                  onChange={(e) => setFormData({ ...formData, tiktok_followers: e.target.value })}
+                  onChange={(e) => {
+                    const value = e.target.value.replace(/[^0-9]/g, '');
+                    setFormData({ ...formData, tiktok_followers: value });
+                  }}
                   className={`input ${errors.tiktok_followers ? 'border-red-500' : ''}`}
-                  placeholder="e.g., 10K, 50K, 100K+"
+                  placeholder="e.g., 10000, 50000, 100000"
                 />
                 {errors.tiktok_followers && (
                   <p className="mt-1 text-sm text-red-500">{errors.tiktok_followers}</p>
@@ -533,10 +576,14 @@ export default function ApplyPage() {
                 <input
                   id="instagram_followers"
                   type="text"
+                  inputMode="numeric"
                   value={formData.instagram_followers}
-                  onChange={(e) => setFormData({ ...formData, instagram_followers: e.target.value })}
+                  onChange={(e) => {
+                    const value = e.target.value.replace(/[^0-9]/g, '');
+                    setFormData({ ...formData, instagram_followers: value });
+                  }}
                   className={`input ${errors.instagram_followers ? 'border-red-500' : ''}`}
-                  placeholder="e.g., 5K, 25K, 75K+"
+                  placeholder="e.g., 5000, 25000, 75000"
                 />
                 {errors.instagram_followers && (
                   <p className="mt-1 text-sm text-red-500">{errors.instagram_followers}</p>

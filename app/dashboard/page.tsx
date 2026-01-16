@@ -20,21 +20,26 @@ export default function DashboardPage() {
       return;
     }
 
+    setApplication(null);
+
     const fetchApplication = async () => {
       if (!user.is_creator && !user.isCreator) {
         try {
           const token = localStorage.getItem('auth-token');
           if (token) {
-            const appStatusResponse = await fetch('/api/creator-applications/status', {
+            const appStatusResponse = await fetch('/api/creator-applications/status?' + new Date().getTime(), {
               headers: {
                 'Authorization': `Bearer ${token}`,
               },
+              cache: 'no-store',
             });
             
             if (appStatusResponse.ok) {
               const appData = await appStatusResponse.json();
               if (appData.hasApplication && appData.application) {
                 setApplication(appData.application);
+              } else {
+                setApplication(null);
               }
             }
           }
@@ -46,6 +51,32 @@ export default function DashboardPage() {
     };
 
     fetchApplication();
+
+    const handleVisibilityChange = () => {
+      if (!document.hidden && user && !authLoading && !user.is_creator && !user.isCreator) {
+        const token = localStorage.getItem('auth-token');
+        if (token) {
+          fetch('/api/creator-applications/status?' + new Date().getTime(), {
+            headers: {
+              'Authorization': `Bearer ${token}`,
+            },
+            cache: 'no-store',
+          })
+            .then(res => res.json())
+            .then(appData => {
+              if (appData.hasApplication && appData.application) {
+                setApplication(appData.application);
+              } else {
+                setApplication(null);
+              }
+            })
+            .catch(() => {});
+        }
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
   }, [user, authLoading, router]);
 
   if (authLoading || loading) {
@@ -66,13 +97,13 @@ export default function DashboardPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
-            <div className="flex items-center">
+            <Link href="/" className="flex items-center">
               <img
                 src="/logo.svg"
                 alt="Doozi Logo"
                 className="h-10 sm:h-12 w-auto"
               />
-            </div>
+            </Link>
 
             {/* User Menu */}
             <div className="flex items-center space-x-4">

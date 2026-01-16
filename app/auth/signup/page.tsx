@@ -35,8 +35,18 @@ export default function SignupPage() {
 
     if (!formData.password) {
       newErrors.password = 'Password is required';
-    } else if (formData.password.length < 6) {
-      newErrors.password = 'Password must be at least 6 characters';
+    } else {
+      if (formData.password.length < 6) {
+        newErrors.password = 'Password must be at least 6 characters';
+      } else if (!/[A-Z]/.test(formData.password)) {
+        newErrors.password = 'Password must contain at least one uppercase letter';
+      } else if (!/[a-z]/.test(formData.password)) {
+        newErrors.password = 'Password must contain at least one lowercase letter';
+      } else if (!/[0-9]/.test(formData.password)) {
+        newErrors.password = 'Password must contain at least one number';
+      } else if (!/[^A-Za-z0-9]/.test(formData.password)) {
+        newErrors.password = 'Password must contain at least one special character';
+      }
     }
 
     if (!formData.agreeToTerms) {
@@ -100,11 +110,13 @@ export default function SignupPage() {
       <div className="hidden lg:flex lg:w-1/2 lg:flex-col lg:justify-center lg:px-12">
         <div className="max-w-md text-white">
           <div className="mb-8 flex items-center">
-            <img
-              src="/logo.svg"
-              alt="Doozi Logo"
-              className="h-12 sm:h-16 w-auto"
-            />
+            <Link href="/">
+              <img
+                src="/logo.svg"
+                alt="Doozi Logo"
+                className="h-12 sm:h-16 w-auto"
+              />
+            </Link>
           </div>
           <h2 className="mb-6 text-4xl font-bold leading-tight">
             Start your travel journey today
@@ -143,11 +155,13 @@ export default function SignupPage() {
         <div className="w-full max-w-md rounded-2xl bg-white p-6 sm:p-8 shadow-card lg:shadow-none">
           {/* Mobile logo */}
           <div className="mb-4 sm:mb-6 flex justify-center lg:hidden">
-            <img
-              src="/logo.svg"
-              alt="Doozi Logo"
-              className="h-12 sm:h-16 w-auto"
-            />
+            <Link href="/">
+              <img
+                src="/logo.svg"
+                alt="Doozi Logo"
+                className="h-12 sm:h-16 w-auto"
+              />
+            </Link>
           </div>
 
           <div className="mb-4 sm:mb-6 text-center lg:text-left">
