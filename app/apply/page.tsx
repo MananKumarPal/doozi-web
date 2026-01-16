@@ -475,10 +475,10 @@ export default function ApplyPage() {
       <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
-            <div className="flex items-center space-x-2">
+            <Link href="/" className="flex items-center space-x-2">
               <MapPin className="h-7 w-7 text-brand-pink" />
               <span className="text-2xl font-bold text-brand-black">Doozi</span>
-            </div>
+            </Link>
             <Link href="/" className="flex items-center space-x-2 text-sm text-brand-gray hover:text-brand-pink transition-colors">
               <ArrowLeft className="w-4 h-4" />
               <span>Back to Home</span>
