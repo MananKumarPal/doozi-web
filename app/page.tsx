@@ -220,7 +220,7 @@ export default function HomePage() {
                   <>
                     <div className="flex items-center space-x-2 text-sm text-gray-700 py-2 border-t border-gray-100 pt-3">
                       <User className="h-4 w-4" />
-                      <span className="truncate">{user.email || user.name || user.fullName}</span>
+                      <span className="truncate">{user.name || user.fullName || user.email}</span>
                     </div>
                     <Link 
                       href="/dashboard" 
@@ -270,7 +270,7 @@ export default function HomePage() {
               </h1>
               <p className="text-lg sm:text-xl md:text-2xl lg:text-3xl mb-8 sm:mb-12 lg:mb-16 leading-relaxed font-medium text-white/90 max-w-2xl">
                 {user 
-                  ? `Welcome back, ${user.email ? user.email.split('@')[0] : user.name || user.fullName || 'there'}! Your Doozi account is ready. Explore the app and start planning your next adventure.`
+                  ? `Welcome back, ${user.name || user.fullName || 'there'}! Your Doozi account is ready. Explore the app and start planning your next adventure.`
                   : "Whether you're a traveler always looking for your next hidden gem or a creator who loves sharing food, hotels, or adventure recs — this app is for you."
                 }
               </p>
@@ -766,7 +766,7 @@ export default function HomePage() {
           {user ? (
             <>
               <h2 className="text-4xl lg:text-5xl font-black text-white mb-6">
-                Welcome back, {user.email ? user.email.split('@')[0] : user.name || user.fullName || 'there'}!
+                Welcome back, {user.name || user.fullName || 'there'}!
               </h2>
               <p className="text-xl text-white/90 mb-2">
                 Your account is ready. Start exploring and planning your next adventure.
@@ -846,10 +846,10 @@ export default function HomePage() {
               </p>
               <div className="flex items-center gap-6">
                 <a href="#" className="text-white/50 hover:text-brand-pink transition-colors">
-                  <Instagram className="w-5 h-5" />
+                  {/* <Instagram className="w-5 h-5" /> */}
                 </a>
                 <a href="#" className="text-white/50 hover:text-brand-pink transition-colors">
-                  <MessageCircle className="w-5 h-5" />
+                  {/* <MessageCircle className="w-5 h-5" /> */}
                 </a>
               </div>
             </div>
