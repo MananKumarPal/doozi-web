@@ -1,0 +1,20 @@
+DOOZI WEBSITE - QUICK COMMANDS
+==============================
+
+Install dependencies:
+npm install
+
+Start development server:
+npm run dev
+
+Build for production:
+npm run build
+
+Start production server:
+npm start
+
+Run linter:
+npm run lint
+
+Environment variable:
+Create .env file with: BASE_URL=https://doozi-app-463323.uc.r.appspot.com
