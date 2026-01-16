@@ -21,7 +21,6 @@ export default function ApplyPage() {
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isSuccess, setIsSuccess] = useState(false);
 
   useEffect(() => {
     if (authLoading) return;
@@ -32,7 +31,6 @@ export default function ApplyPage() {
     }
 
     setApplication(null);
-    setIsSuccess(false);
 
     const fetchApplication = async () => {
       try {
@@ -155,10 +153,16 @@ export default function ApplyPage() {
         body: JSON.stringify(formData),
       });
 
+      const responseData = await response.json();
+      
       if (response.ok) {
-        setIsSuccess(true);
-        setApplication(null);
-        await refreshUser();
+        setErrors({});
+        
+        try {
+          await refreshUser();
+        } catch (error) {
+          console.error('Failed to refresh user:', error);
+        }
         
         const token = localStorage.getItem('auth-token');
         if (token) {
@@ -174,19 +178,15 @@ export default function ApplyPage() {
               const appData = await appStatusResponse.json();
               if (appData.hasApplication && appData.application) {
                 setApplication(appData.application);
-              } else {
-                setApplication(null);
+                window.scrollTo({ top: 0, behavior: 'smooth' });
               }
             }
           } catch (error) {
             console.error('Failed to fetch application status:', error);
           }
         }
-        
-        window.scrollTo({ top: 0, behavior: 'smooth' });
       } else {
-        const data = await response.json();
-        setErrors({ submit: data.error || 'Submission failed. Please try again.' });
+        setErrors({ submit: responseData.error || 'Submission failed. Please try again.' });
       }
     } catch (error) {
       setErrors({ submit: 'An error occurred. Please try again.' });
@@ -378,80 +378,6 @@ export default function ApplyPage() {
                     you can start planning your content and thinking about the amazing travel experiences you want to share.
                   </p>
                 </div>
-              </div>
-            </div>
-
-            <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
-              <Link href="/dashboard" className="button-primary">
-                Go to Dashboard
-              </Link>
-              <Link href="/" className="button-secondary">
-                Back to Home
-              </Link>
-            </div>
-          </div>
-        </main>
-      </div>
-    );
-  }
-
-  if (isSuccess) {
-    return (
-      <div className="min-h-screen bg-gray-50">
-        {/* Header */}
-        <header className="bg-white border-b border-gray-200">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex items-center justify-between h-16">
-              <Link href="/" className="flex items-center space-x-2">
-                <MapPin className="h-7 w-7 text-brand-pink" />
-                <span className="text-2xl font-bold text-brand-black">Doozi</span>
-              </Link>
-              <Link href="/" className="text-sm text-brand-gray hover:text-brand-pink transition-colors">
-                Back to Home
-              </Link>
-            </div>
-          </div>
-        </header>
-
-        {/* Success Message */}
-        <main className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-          <div className="bg-white rounded-2xl shadow-card p-8 md:p-12 text-center">
-            <div className="w-20 h-20 bg-brand-green rounded-full flex items-center justify-center mx-auto mb-6">
-              <CheckCircle className="w-10 h-10 text-white" />
-            </div>
-            <h1 className="text-3xl md:text-4xl font-bold text-brand-black mb-4">
-              Application Submitted!
-            </h1>
-            <p className="text-lg text-brand-gray leading-relaxed mb-8">
-              Thank you for applying to be a Doozi creator. We're reviewing applications now so approved creators 
-              are ready for launch.
-            </p>
-
-            {formData.public_content_allowed && (
-              <div className="bg-brand-green/10 border border-brand-green/20 rounded-xl p-6 mb-8">
-                <div className="flex items-start space-x-3">
-                  <CheckCircle className="w-5 h-5 text-brand-green flex-shrink-0 mt-0.5" />
-                  <div className="text-left">
-                    <h3 className="font-bold text-brand-black mb-2">Content Permission Granted</h3>
-                    <p className="text-sm text-brand-gray">
-                      Thanks for giving us permission to use your existing public content. This will help us 
-                      set up your profile and tag your videos to the correct locations faster, so you can hit 
-                      the ground running when we launch!
-                    </p>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            <div className="space-y-4">
-              <h3 className="text-xl font-bold text-brand-black">What Happens Next?</h3>
-              <div className="text-left space-y-3 text-brand-gray">
-                <p>✅ We'll review your application (typically within 3-5 business days)</p>
-                <p>✅ If approved, we'll send you an email with next steps</p>
-                {formData.public_content_allowed && (
-                  <p>✅ We may begin setting up your profile using your public content</p>
-                )}
-                <p>✅ You'll get early access to Creator Studio when we launch</p>
               </div>
             </div>
 
