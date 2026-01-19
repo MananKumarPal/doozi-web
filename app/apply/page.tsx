@@ -190,6 +190,9 @@ export default function ApplyPage() {
         const data = await response.json();
         setApplication(data.data);
         await refreshUser();
+        await new Promise(resolve => setTimeout(resolve, 500));
+        sessionStorage.setItem('applicationJustSubmitted', 'true');
+        sessionStorage.setItem('applicationData', JSON.stringify(data.data));
       } else {
         const data = await response.json();
         setErrors({ submit: data.error || 'Application submission failed' });
