@@ -8,7 +8,7 @@ export async function POST(request: NextRequest) {
   try {
     console.log('POST /api/auth/signup');
     const body = await request.json();
-    const { email, password } = body;
+    const { email, password, username } = body;
 
     if (!email || !password) {
       return NextResponse.json(
@@ -18,10 +18,15 @@ export async function POST(request: NextRequest) {
     }
 
     const signupUrl = `${API_URL}/new/app/users/signup`;
+    const signupBody: any = { email, password };
+    if (username) {
+      signupBody.username = username;
+    }
+    
     const signupResponse = await fetch(signupUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password }),
+      body: JSON.stringify(signupBody),
     });
 
     const contentType = signupResponse.headers.get('content-type');
@@ -45,6 +50,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    if (signupData.requires_verification) {
+      return NextResponse.json({
+        success: true,
+        message: signupData.message || 'Account created! Please verify your email.',
+        requires_verification: true,
+        email: signupData.result?.email || email,
+      }, { status: 201 });
+    }
+
     const loginUrl = `${API_URL}/new/app/users/login`;
     const loginResponse = await fetch(loginUrl, {
       method: 'POST',
@@ -61,8 +75,13 @@ export async function POST(request: NextRequest) {
       const text = await loginResponse.text();
       console.error('[SIGNUP] Login non-JSON response:', text.substring(0, 200));
       return NextResponse.json(
-        { error: 'Account created but failed to get authentication token' },
-        { status: 500 }
+        { 
+          success: true,
+          message: 'Account created! Please verify your email.',
+          requires_verification: true,
+          email: email,
+        },
+        { status: 201 }
       );
     }
 
@@ -75,6 +94,7 @@ export async function POST(request: NextRequest) {
           name: user.full_name || user.fullName || user.name,
           is_creator: user.is_creator || user.isCreator || false,
           isCreator: user.is_creator || user.isCreator || false,
+          emailVerified: user.emailVerified || false,
         },
         token: loginData.data.token,
         message: signupData.message || 'Account created successfully',
@@ -83,8 +103,13 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json(
-      { error: 'Account created but failed to get authentication token' },
-      { status: 500 }
+      { 
+        success: true,
+        message: 'Account created! Please verify your email.',
+        requires_verification: true,
+        email: email,
+      },
+      { status: 201 }
     );
   } catch (error: any) {
     console.error('[SIGNUP] Error:', error.message);

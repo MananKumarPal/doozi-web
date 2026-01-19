@@ -59,6 +59,12 @@ export default function LoginPage() {
         const data = await response.json();
         if (data.token) {
           localStorage.setItem('auth-token', data.token);
+          
+          if (data.requires_verification) {
+            router.push(`/auth/verify-email?email=${encodeURIComponent(data.email || formData.email)}`);
+            return;
+          }
+          
           await refreshUser();
         } else {
           setErrors({ submit: 'Login failed - no token received' });

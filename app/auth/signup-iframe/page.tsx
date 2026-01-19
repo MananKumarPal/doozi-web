@@ -20,6 +20,7 @@ export default function SignupIframePage() {
 
   useEffect(() => {
     const checkAuth = async () => {
+      setLoading(true);
       try {
         const token = localStorage.getItem('auth-token');
         if (token) {
@@ -30,8 +31,34 @@ export default function SignupIframePage() {
           });
           if (response.ok) {
             const data = await response.json();
-            setUser(data.user);
+            const userData = data.user || data.result?.user || data.data?.user;
+            if (userData) {
+              setUser({
+                id: userData._id || userData.id || userData.user_id,
+                email: userData.email,
+                name: userData.full_name || userData.fullName || userData.name,
+                fullName: userData.full_name || userData.fullName,
+                username: userData.username,
+                is_creator: userData.is_creator || userData.isCreator || false,
+                isCreator: userData.is_creator || userData.isCreator || false,
+              });
+            } else if (data.result) {
+              setUser({
+                id: data.result._id || data.result.id || data.result.user_id,
+                email: data.result.email,
+                name: data.result.full_name || data.result.fullName || data.result.name,
+                fullName: data.result.full_name || data.result.fullName,
+                username: data.result.username,
+                is_creator: data.result.is_creator || data.result.isCreator || false,
+                isCreator: data.result.is_creator || data.result.isCreator || false,
+              });
+            }
+          } else {
+            localStorage.removeItem('auth-token');
+            setUser(null);
           }
+        } else {
+          setUser(null);
         }
       } catch (error) {
         setUser(null);
@@ -41,6 +68,33 @@ export default function SignupIframePage() {
     };
 
     checkAuth();
+
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        checkAuth();
+      }
+    };
+
+    const handleMessage = (e: MessageEvent) => {
+      if (e.data?.type === 'DOOZI_AUTH_UPDATE') {
+        checkAuth();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('message', handleMessage);
+
+    const interval = setInterval(() => {
+      if (!document.hidden) {
+        checkAuth();
+      }
+    }, 10000);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('message', handleMessage);
+      clearInterval(interval);
+    };
   }, []);
 
   const validateForm = () => {
@@ -86,17 +140,25 @@ export default function SignupIframePage() {
 
       if (response.ok) {
         const data = await response.json();
-        if (data.token) {
-          localStorage.setItem('auth-token', data.token);
+        if (data.token || data.data?.token) {
+          localStorage.setItem('auth-token', data.token || data.data.token);
         }
-        setIsRedirecting(true);
-        setTimeout(() => {
+        if (data.requires_verification) {
           try {
-            window.parent.location.href = '/dashboard';
+            window.parent.location.href = `/auth/verify-email?email=${encodeURIComponent(formData.email)}`;
           } catch (error) {
-            window.parent.postMessage({ type: 'DOOZI_REDIRECT', redirectTo: '/dashboard' }, '*');
+            window.parent.postMessage({ type: 'DOOZI_REDIRECT', redirectTo: `/auth/verify-email?email=${encodeURIComponent(formData.email)}` }, '*');
           }
-        }, 500);
+        } else {
+          setIsRedirecting(true);
+          setTimeout(() => {
+            try {
+              window.parent.location.href = '/dashboard';
+            } catch (error) {
+              window.parent.postMessage({ type: 'DOOZI_REDIRECT', redirectTo: '/dashboard' }, '*');
+            }
+          }, 500);
+        }
       } else {
         const data = await response.json();
         setErrors({ submit: data.error || 'An error occurred' });

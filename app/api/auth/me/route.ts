@@ -6,22 +6,18 @@ export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
   try {
-    console.log('GET /api/auth/me');
-    const authHeader = request.headers.get('authorization');
+    const authHeader = request.headers.get('Authorization');
     
     if (!authHeader) {
       return NextResponse.json(
-        { error: 'Not authenticated' },
+        { error: 'Unauthorized' },
         { status: 401 }
       );
     }
 
-    const url = `${API_URL}/new/app/users/protected/me`;
-    const response = await fetch(url, {
-      method: 'GET',
+    const response = await fetch(`${API_URL}/new/app/users/protected/me`, {
       headers: {
         'Authorization': authHeader,
-        'Content-Type': 'application/json',
       },
     });
 
@@ -32,37 +28,79 @@ export async function GET(request: NextRequest) {
       data = await response.json();
     } else {
       const text = await response.text();
-      console.error('[AUTH/ME] Non-JSON response:', text.substring(0, 200));
+      console.error('[ME] Non-JSON response:', text.substring(0, 200));
       return NextResponse.json(
-        { error: `Backend returned ${response.status}. Check endpoint URL: ${url}` },
+        { error: `Backend returned ${response.status}` },
         { status: 500 }
       );
     }
 
-    if (data.success && data.result?.user) {
-      const user = data.result.user;
-      const result = {
-        user: {
-          id: user._id || user.id,
-          email: user.email,
-          name: user.full_name || user.fullName || user.name,
-          fullName: user.full_name || user.fullName,
-          is_creator: user.is_creator || user.isCreator || false,
-          isCreator: user.is_creator || user.isCreator || false,
-        },
-      };
-      return NextResponse.json(result, { status: 200 });
+    if (!data.success) {
+      return NextResponse.json(
+        { error: data.error || 'Failed to get user profile' },
+        { status: response.status || 400 }
+      );
     }
 
-    return NextResponse.json(
-      { error: data.error || 'Not authenticated' },
-      { status: response.status || 401 }
-    );
+    return NextResponse.json(data, { status: 200 });
   } catch (error: any) {
-    console.error('[AUTH/ME] Error:', error.message);
+    console.error('[ME] Error:', error.message);
     return NextResponse.json(
-      { error: 'Not authenticated' },
-      { status: 401 }
+      { error: 'An error occurred' },
+      { status: 500 }
+    );
+  }
+}
+
+export async function PUT(request: NextRequest) {
+  try {
+    const authHeader = request.headers.get('Authorization');
+    
+    if (!authHeader) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
+    const body = await request.json();
+
+    const response = await fetch(`${API_URL}/new/app/users/protected/me`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': authHeader,
+      },
+      body: JSON.stringify(body),
+    });
+
+    const contentType = response.headers.get('content-type');
+    let data;
+
+    if (contentType && contentType.includes('application/json')) {
+      data = await response.json();
+    } else {
+      const text = await response.text();
+      console.error('[ME-UPDATE] Non-JSON response:', text.substring(0, 200));
+      return NextResponse.json(
+        { error: `Backend returned ${response.status}` },
+        { status: 500 }
+      );
+    }
+
+    if (!data.success) {
+      return NextResponse.json(
+        { error: data.error || 'Failed to update profile' },
+        { status: response.status || 400 }
+      );
+    }
+
+    return NextResponse.json(data, { status: 200 });
+  } catch (error: any) {
+    console.error('[ME-UPDATE] Error:', error.message);
+    return NextResponse.json(
+      { error: 'An error occurred' },
+      { status: 500 }
     );
   }
 }

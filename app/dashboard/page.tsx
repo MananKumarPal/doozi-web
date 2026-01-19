@@ -20,6 +20,11 @@ export default function DashboardPage() {
       return;
     }
 
+    if (user && !user.emailVerified) {
+      router.push(`/auth/verify-email?email=${encodeURIComponent(user.email)}`);
+      return;
+    }
+
     setApplication(null);
 
     const fetchApplication = async () => {

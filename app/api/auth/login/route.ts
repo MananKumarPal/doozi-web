@@ -40,17 +40,26 @@ export async function POST(request: NextRequest) {
 
     if (data.success && data.data) {
       const user = data.data.user;
-      const result = {
+      const emailVerified = user.emailVerified || false;
+      
+      const result: any = {
         user: {
           id: user._id || user.id,
           email: user.email,
           name: user.full_name || user.fullName || user.name,
           is_creator: user.is_creator || user.isCreator || false,
           isCreator: user.is_creator || user.isCreator || false,
+          emailVerified: emailVerified,
         },
         token: data.data.token,
         message: 'Login successful',
       };
+
+      if (!emailVerified) {
+        result.requires_verification = true;
+        result.email = user.email;
+      }
+
       return NextResponse.json(result, { status: 200 });
     }
 
