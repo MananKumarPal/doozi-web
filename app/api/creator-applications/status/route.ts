@@ -42,13 +42,15 @@ export async function GET(req: NextRequest) {
       userId = userData.result.user.id;
     }
     
-    const statusUrl = `${API_URL}/new/app/users/application/status/${userId}`;
+    const statusUrl = `${API_URL}/new/app/users/application/status/${userId}?t=${Date.now()}`;
     const response = await fetch(statusUrl, {
       method: 'GET',
       headers: { 
         'Authorization': authHeader,
         'Content-Type': 'application/json',
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
       },
+      cache: 'no-store',
     });
     
     const responseText = await response.text();
@@ -80,6 +82,12 @@ export async function GET(req: NextRequest) {
           admin_notes: data.data.admin_notes,
           created_at: data.data.created_at,
         },
+      }, {
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0',
+        },
       });
     }
     
@@ -87,6 +95,12 @@ export async function GET(req: NextRequest) {
       success: true,
       hasApplication: false,
       application: null,
+    }, {
+      headers: {
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0',
+      },
     });
   } catch (error: any) {
     console.error('[CREATOR-APP-STATUS] Error:', error.message);

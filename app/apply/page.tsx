@@ -28,10 +28,10 @@ export default function ApplyPage() {
         router.push('/auth/login?redirect=/apply');
       } else if (!user.emailVerified) {
         router.push(`/auth/verify-email?email=${encodeURIComponent(user.email)}`);
-      } else {
+      } else if (!application && loadingApplication) {
         const token = localStorage.getItem('auth-token');
-        if (token && user?.id) {
-          fetch(`/api/creator-applications/status/${user.id}?t=` + new Date().getTime(), {
+        if (token) {
+          fetch(`/api/creator-applications/status?t=` + Date.now(), {
             headers: {
               'Authorization': `Bearer ${token}`,
             },
@@ -47,17 +47,23 @@ export default function ApplyPage() {
             .catch(() => {
               setLoadingApplication(false);
             });
+        } else {
+          setLoadingApplication(false);
         }
+      } else if (application) {
+        setLoadingApplication(false);
       }
     }
-  }, [user, authLoading, router]);
+  }, [user, authLoading, router, application, loadingApplication]);
 
   useEffect(() => {
+    if (!user || application) return;
+    
     const handleVisibilityChange = () => {
-      if (!document.hidden && user?.id) {
+      if (!document.hidden && user && !application) {
         const token = localStorage.getItem('auth-token');
         if (token) {
-          fetch(`/api/creator-applications/status/${user.id}?t=` + new Date().getTime(), {
+          fetch(`/api/creator-applications/status?t=` + Date.now(), {
             headers: {
               'Authorization': `Bearer ${token}`,
             },
@@ -78,7 +84,7 @@ export default function ApplyPage() {
 
     document.addEventListener('visibilitychange', handleVisibilityChange);
     return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
-  }, [user, authLoading, router]);
+  }, [user, application]);
 
   const normalizeTikTokLink = (input: string): string => {
     const trimmed = input.trim();
@@ -188,11 +194,17 @@ export default function ApplyPage() {
 
       if (response.ok) {
         const data = await response.json();
-        setApplication(data.data);
-        await refreshUser();
-        await new Promise(resolve => setTimeout(resolve, 500));
-        sessionStorage.setItem('applicationJustSubmitted', 'true');
-        sessionStorage.setItem('applicationData', JSON.stringify(data.data));
+        const applicationData = data.data;
+        
+        if (applicationData) {
+          sessionStorage.setItem('applicationJustSubmitted', 'true');
+          sessionStorage.setItem('applicationData', JSON.stringify(applicationData));
+          setApplication(applicationData);
+          setLoadingApplication(false);
+          await refreshUser();
+        } else {
+          setErrors({ submit: 'Application submitted but no data received' });
+        }
       } else {
         const data = await response.json();
         setErrors({ submit: data.error || 'Application submission failed' });
@@ -313,7 +325,7 @@ export default function ApplyPage() {
                 <div className="flex justify-between items-center py-2">
                   <span className="text-sm text-brand-gray">Submitted</span>
                   <span className="font-medium text-brand-black">
-                    {new Date(application.applied_at).toLocaleDateString()}
+                    {new Date(application.applied_at || application.created_at || Date.now()).toLocaleDateString()}
                   </span>
                 </div>
               </div>

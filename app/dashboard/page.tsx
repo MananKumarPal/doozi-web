@@ -12,65 +12,6 @@ export default function DashboardPage() {
   const [application, setApplication] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
-  const fetchApplicationInBackground = async () => {
-    if (!user || user.is_creator || user.isCreator) return;
-    
-    try {
-      const token = localStorage.getItem('auth-token');
-      if (token) {
-        const appStatusResponse = await fetch('/api/creator-applications/status?' + new Date().getTime(), {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-          },
-          cache: 'no-store',
-        });
-        
-        if (appStatusResponse.ok) {
-          const appData = await appStatusResponse.json();
-          if (appData.hasApplication && appData.application) {
-            setApplication(appData.application);
-          } else {
-            setApplication(null);
-          }
-        }
-      }
-    } catch (error) {
-      console.error('Failed to fetch application status in background:', error);
-    }
-  };
-
-  const fetchApplication = async () => {
-    if (!user || user.is_creator || user.isCreator) {
-      setLoading(false);
-      return;
-    }
-    
-    try {
-      const token = localStorage.getItem('auth-token');
-      if (token) {
-        const appStatusResponse = await fetch('/api/creator-applications/status?' + new Date().getTime(), {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-          },
-          cache: 'no-store',
-        });
-        
-        if (appStatusResponse.ok) {
-          const appData = await appStatusResponse.json();
-          if (appData.hasApplication && appData.application) {
-            setApplication(appData.application);
-          } else {
-            setApplication(null);
-          }
-        }
-      }
-    } catch (error) {
-      console.error('Failed to fetch application status:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
     if (authLoading) return;
 
@@ -84,22 +25,91 @@ export default function DashboardPage() {
       return;
     }
 
+    const fetchApplicationInBackground = async () => {
+      if (!user || user.is_creator || user.isCreator) {
+        sessionStorage.removeItem('applicationJustSubmitted');
+        sessionStorage.removeItem('applicationData');
+        return;
+      }
+      
+      try {
+        const token = localStorage.getItem('auth-token');
+        if (token) {
+          const appStatusResponse = await fetch('/api/creator-applications/status?t=' + Date.now(), {
+            headers: {
+              'Authorization': `Bearer ${token}`,
+            },
+            cache: 'no-store',
+          });
+          
+          if (appStatusResponse.ok) {
+            const appData = await appStatusResponse.json();
+            if (appData.hasApplication && appData.application) {
+              setApplication(appData.application);
+            } else {
+              setApplication(null);
+            }
+          }
+        }
+        sessionStorage.removeItem('applicationJustSubmitted');
+        sessionStorage.removeItem('applicationData');
+      } catch (error) {
+        console.error('Failed to fetch application status in background:', error);
+        sessionStorage.removeItem('applicationJustSubmitted');
+        sessionStorage.removeItem('applicationData');
+      }
+    };
+
+    const fetchApplication = async () => {
+      if (!user || user.is_creator || user.isCreator) {
+        setLoading(false);
+        return;
+      }
+      
+      try {
+        const token = localStorage.getItem('auth-token');
+        if (token) {
+          const appStatusResponse = await fetch('/api/creator-applications/status?t=' + Date.now(), {
+            headers: {
+              'Authorization': `Bearer ${token}`,
+            },
+            cache: 'no-store',
+          });
+          
+          if (appStatusResponse.ok) {
+            const appData = await appStatusResponse.json();
+            if (appData.hasApplication && appData.application) {
+              setApplication(appData.application);
+            } else {
+              setApplication(null);
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Failed to fetch application status:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
     const justSubmitted = sessionStorage.getItem('applicationJustSubmitted');
     const storedAppData = sessionStorage.getItem('applicationData');
     
     if (justSubmitted === 'true' && storedAppData) {
       try {
         const parsedData = JSON.parse(storedAppData);
-        setApplication(parsedData);
-        setLoading(false);
-        
-        sessionStorage.removeItem('applicationJustSubmitted');
-        sessionStorage.removeItem('applicationData');
-        
-        fetchApplicationInBackground();
-        return;
+        if (parsedData && parsedData.status) {
+          setApplication(parsedData);
+          setLoading(false);
+          setTimeout(() => {
+            fetchApplicationInBackground();
+          }, 100);
+          return;
+        }
       } catch (error) {
         console.error('Error parsing stored application data:', error);
+        sessionStorage.removeItem('applicationJustSubmitted');
+        sessionStorage.removeItem('applicationData');
       }
     }
 
@@ -110,7 +120,7 @@ export default function DashboardPage() {
       if (!document.hidden && user && !authLoading && !user.is_creator && !user.isCreator) {
         const token = localStorage.getItem('auth-token');
         if (token) {
-          fetch('/api/creator-applications/status?' + new Date().getTime(), {
+          fetch('/api/creator-applications/status?t=' + Date.now(), {
             headers: {
               'Authorization': `Bearer ${token}`,
             },

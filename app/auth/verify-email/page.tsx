@@ -300,13 +300,14 @@ function VerifyEmailContent() {
             </div>
 
             <div className="mt-6 pt-6 border-t border-gray-200 text-center">
-              <Link
-                href="/auth/login"
+              <button
+                type="button"
+                onClick={() => router.push('/')}
                 className="text-sm text-brand-gray hover:text-brand-pink transition-colors inline-flex items-center gap-2"
               >
                 <ArrowLeft className="w-4 h-4" />
-                Back to Login
-              </Link>
+                Back to Home
+              </button>
             </div>
           </div>
 
