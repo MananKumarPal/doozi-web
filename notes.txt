@@ -18,3 +18,4 @@ npm run lint
 
 Environment variable:
 Create .env file with: BASE_URL=https://doozi-app-463323.uc.r.appspot.com
+//
