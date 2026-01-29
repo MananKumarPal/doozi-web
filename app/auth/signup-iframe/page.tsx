@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { MapPin, Users, Camera, Calendar, LogOut, Loader2, Video, Expand } from 'lucide-react';
 
 export default function SignupIframePage() {
@@ -317,6 +318,13 @@ export default function SignupIframePage() {
                 placeholder={authView === 'sign_up' ? 'Create password' : 'Password'}
                 className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-pink focus:border-transparent transition-all text-sm"
               />
+              {authView === 'sign_in' && (
+                <div className="mt-1.5 text-right">
+                  <Link href="/auth/forgot-password" target="_top" className="text-xs text-brand-pink hover:underline font-medium">
+                    Forgot password?
+                  </Link>
+                </div>
+              )}
               {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password}</p>}
             </div>
 
