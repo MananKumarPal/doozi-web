@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { MapPin, Sparkles, Video, User, LogOut, TrendingUp, ArrowRight, Camera, Calendar, Target, Clock } from 'lucide-react';
+import { MapPin, Sparkles, Video, User, LogOut, TrendingUp, ArrowRight, Camera, Calendar, Target, Clock, Building2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -352,6 +352,31 @@ export default function DashboardPage() {
               </div>
             </div>
           )}
+        </div>
+
+        <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden mb-8">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 sm:gap-6 p-6 sm:p-8">
+            <div className="flex items-start gap-4">
+              <div className="w-12 h-12 rounded-xl bg-brand-green/10 flex items-center justify-center flex-shrink-0">
+                <Building2 className="w-6 h-6 text-brand-green" />
+              </div>
+              <div>
+                <h3 className="text-lg sm:text-xl font-bold text-brand-black mb-1">
+                  For businesses
+                </h3>
+                <p className="text-sm text-brand-gray leading-relaxed max-w-md">
+                  Get your business on Doozi — be featured and matched with travel creators who&apos;ll create content that gets seen.
+                </p>
+              </div>
+            </div>
+            <Link
+              href="/dashboard/business-campaign"
+              className="inline-flex items-center justify-center gap-2 border-2 border-brand-green text-brand-green px-5 py-2.5 rounded-xl font-bold hover:bg-brand-green hover:text-white transition-colors text-sm sm:text-base flex-shrink-0"
+            >
+              Feature your business
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
         </div>
 
         {/* Timeline */}
