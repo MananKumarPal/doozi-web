@@ -693,7 +693,7 @@ export default function HomePage() {
               </div>
 
               <div className="text-center">
-                <Link href="/dashboard/business-campaign" className="inline-flex items-center gap-3 py-5 px-10 text-xl font-bold bg-white text-brand-green rounded-full hover:shadow-2xl hover:scale-105 transition-all">
+                <Link href="/business-campaign" className="inline-flex items-center gap-3 py-5 px-10 text-xl font-bold bg-white text-brand-green rounded-full hover:shadow-2xl hover:scale-105 transition-all">
                   Submit Your Campaign Request
                   <ArrowRight className="w-6 h-6" />
                 </Link>
