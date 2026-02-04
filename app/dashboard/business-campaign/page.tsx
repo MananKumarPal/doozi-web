@@ -1,8 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { ArrowLeft, Sparkles, Building2, DollarSign, FileText, Calendar, Share2, CheckCircle, Download } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -15,9 +14,11 @@ const minDeliveryDate = () => {
   return d.toISOString().slice(0, 10);
 };
 
+const onlyPhone = (v: string) => v.replace(/[^\d+\-() ]/g, '');
+const onlyCurrency = (v: string) => v.replace(/[^\d$,.]/g, '');
+
 export default function BusinessCampaignPage() {
-  const router = useRouter();
-  const { user, loading: authLoading } = useAuth();
+  const { user } = useAuth();
   const [submitted, setSubmitted] = useState(false);
   const [receipt, setReceipt] = useState<any>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -33,7 +34,7 @@ export default function BusinessCampaignPage() {
     phone: '',
     inKindValue: '',
     paidCompensation: '',
-    paidCompensationOption: 'not_offering' as 'amount' | 'not_offering',
+    paidCompensationOption: 'amount' as 'amount' | 'not_offering',
     highlightRequest: '',
     brandGuidelines: '',
     preferredCreatorType: '',
@@ -42,21 +43,9 @@ export default function BusinessCampaignPage() {
     postTiktok: false,
     postInstagram: false,
     reuseContent: null as boolean | null,
-    confirmIndependent: false,
     confirmAccurate: false,
   });
 
-  useEffect(() => {
-    if (authLoading) return;
-    if (!user) {
-      router.push('/auth/login?redirect=/dashboard/business-campaign');
-      return;
-    }
-    if (user && !user.emailVerified) {
-      router.push(`/auth/verify-email?email=${encodeURIComponent(user.email)}`);
-      return;
-    }
-  }, [user, authLoading, router]);
 
   const validate = () => {
     const e: Record<string, string> = {};
@@ -81,7 +70,6 @@ export default function BusinessCampaignPage() {
       if (form.deliveryBy < min) e.deliveryBy = 'Minimum 30 days from today';
     }
     if (form.reuseContent === null) e.reuseContent = 'Please select Yes or No';
-    if (!form.confirmIndependent) e.confirmIndependent = 'Required';
     if (!form.confirmAccurate) e.confirmAccurate = 'Required';
     setErrors(e);
     return Object.keys(e).length === 0;
@@ -93,7 +81,6 @@ export default function BusinessCampaignPage() {
     setIsSubmitting(true);
     setErrors({});
     try {
-      const token = localStorage.getItem('auth-token');
       const payload = {
         businessName: form.businessName.trim(),
         businessCategory: form.businessCategory,
@@ -112,12 +99,14 @@ export default function BusinessCampaignPage() {
         postTiktok: form.postTiktok,
         postInstagram: form.postInstagram,
         reuseContent: form.reuseContent,
-        confirmIndependent: form.confirmIndependent,
         confirmAccurate: form.confirmAccurate,
       };
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      const token = typeof window !== 'undefined' ? localStorage.getItem('auth-token') : null;
+      if (token) headers.Authorization = `Bearer ${token}`;
       const res = await fetch('/api/business-campaigns', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        headers,
         body: JSON.stringify(payload),
       });
       const data = await res.json();
@@ -135,49 +124,69 @@ export default function BusinessCampaignPage() {
   };
 
   const downloadReceipt = () => {
-    const lines = [
-      'Doozi Business Campaign – Receipt',
-      '',
-      `Submission ID: ${receipt?.id || 'N/A'}`,
-      `Date: ${new Date().toLocaleString()}`,
-      '',
-      'Business Information',
-      `Business Name: ${receipt?.businessName}`,
-      `Category: ${receipt?.businessCategory}`,
-      `Address: ${receipt?.businessAddress}`,
-      `City: ${receipt?.city}`,
-      `Country: ${receipt?.country}`,
-      `Contact Email: ${receipt?.contactEmail}`,
-      `Phone: ${receipt?.phone}`,
-      '',
-      'Campaign Investment',
-      `In-Kind Value: ${receipt?.inKindValue}`,
-      `Paid Compensation: ${receipt?.paidCompensation || 'Not offering'}`,
-      '',
-      'Content',
-      `Highlight: ${receipt?.highlightRequest}`,
-      `Delivery By: ${receipt?.deliveryBy}`,
-      `Post: Doozi, ${receipt?.postTiktok ? 'TikTok' : ''} ${receipt?.postInstagram ? 'Instagram' : ''}`,
-      `Reuse for marketing: ${receipt?.reuseContent === true ? 'Yes' : 'No'}`,
-    ];
-    const blob = new Blob([lines.join('\n')], { type: 'text/plain' });
+    const id = receipt?.id || 'N/A';
+    const date = receipt?.submittedAt ? new Date(receipt.submittedAt).toLocaleString() : new Date().toLocaleString();
+    const posts = ['Doozi', receipt?.postTiktok && 'TikTok', receipt?.postInstagram && 'Instagram'].filter(Boolean).join(', ');
+    const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Doozi Campaign Receipt – ${(receipt?.businessName || '').replace(/</g, '&lt;')}</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { font-family: system-ui, -apple-system, sans-serif; max-width: 640px; margin: 0 auto; padding: 32px 24px; color: #18181B; line-height: 1.5; }
+    .header { text-align: center; margin-bottom: 32px; padding-bottom: 24px; border-bottom: 2px solid #f4f4f5; }
+    .logo { font-size: 24px; font-weight: 800; background: linear-gradient(90deg, #FF4785, #8F65F6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .title { font-size: 14px; color: #71717a; text-transform: uppercase; letter-spacing: 0.05em; margin-top: 4px; }
+    .section { margin-bottom: 24px; }
+    .section h2 { font-size: 12px; color: #8F65F6; text-transform: uppercase; letter-spacing: 0.05em; margin: 0 0 12px 0; font-weight: 600; }
+    .row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #f4f4f5; font-size: 14px; }
+    .row:last-child { border-bottom: none; }
+    .label { color: #71717a; }
+    .value { font-weight: 500; text-align: right; max-width: 60%; }
+    .footer { margin-top: 32px; padding-top: 24px; border-top: 2px solid #f4f4f5; font-size: 12px; color: #71717a; text-align: center; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="logo">Doozi</div>
+    <div class="title">Campaign request receipt</div>
+    <div class="row" style="margin-top: 16px; border: none;"><span class="label">Submission ID</span><span class="value">${String(id).replace(/</g, '&lt;')}</span></div>
+    <div class="row" style="border: none;"><span class="label">Date</span><span class="value">${date}</span></div>
+  </div>
+  <div class="section">
+    <h2>Business information</h2>
+    <div class="row"><span class="label">Business name</span><span class="value">${(receipt?.businessName || '—').replace(/</g, '&lt;')}</span></div>
+    <div class="row"><span class="label">Category</span><span class="value">${(receipt?.businessCategory || '—').replace(/</g, '&lt;')}</span></div>
+    <div class="row"><span class="label">Address</span><span class="value">${(receipt?.businessAddress || '—').replace(/</g, '&lt;')}</span></div>
+    <div class="row"><span class="label">City</span><span class="value">${(receipt?.city || '—').replace(/</g, '&lt;')}</span></div>
+    <div class="row"><span class="label">Country</span><span class="value">${(receipt?.country || '—').replace(/</g, '&lt;')}</span></div>
+    <div class="row"><span class="label">Contact email</span><span class="value">${(receipt?.contactEmail || '—').replace(/</g, '&lt;')}</span></div>
+    <div class="row"><span class="label">Phone</span><span class="value">${(receipt?.phone || '—').replace(/</g, '&lt;')}</span></div>
+  </div>
+  <div class="section">
+    <h2>Campaign investment</h2>
+    <div class="row"><span class="label">In-kind value</span><span class="value">${(receipt?.inKindValue || '—').replace(/</g, '&lt;')}</span></div>
+    <div class="row"><span class="label">Paid compensation</span><span class="value">${(receipt?.paidCompensation || 'Not offering').replace(/</g, '&lt;')}</span></div>
+  </div>
+  <div class="section">
+    <h2>Content</h2>
+    <div class="row"><span class="label">Highlight request</span><span class="value">${(receipt?.highlightRequest || '—').replace(/</g, '&lt;').replace(/\n/g, ' ')}</span></div>
+    <div class="row"><span class="label">Delivery by</span><span class="value">${(receipt?.deliveryBy || '—').replace(/</g, '&lt;')}</span></div>
+    <div class="row"><span class="label">Post to</span><span class="value">${posts.replace(/</g, '&lt;')}</span></div>
+    <div class="row"><span class="label">Reuse for marketing</span><span class="value">${receipt?.reuseContent === true ? 'Yes' : 'No'}</span></div>
+  </div>
+  <div class="footer">Doozi – Travel discovery made simple. This receipt confirms your campaign request was received.</div>
+</body>
+</html>`;
+    const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `doozi-campaign-receipt-${receipt?.id || Date.now()}.txt`;
+    a.download = `doozi-campaign-receipt-${receipt?.id || Date.now()}.html`;
     a.click();
     URL.revokeObjectURL(url);
   };
-
-  if (authLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="w-16 h-16 border-4 border-brand-pink border-t-transparent rounded-full animate-spin" />
-      </div>
-    );
-  }
-
-  if (!user) return null;
 
   if (submitted) {
     return (
@@ -188,9 +197,9 @@ export default function BusinessCampaignPage() {
               <Link href="/" className="flex items-center">
                 <img src="/logo.svg" alt="Doozi" className="h-10 sm:h-12 w-auto" />
               </Link>
-              <Link href="/dashboard" className="flex items-center gap-2 text-sm text-brand-gray hover:text-brand-pink transition-colors font-medium">
+              <Link href={user ? '/dashboard' : '/'} className="flex items-center gap-2 text-sm text-brand-gray hover:text-brand-pink transition-colors font-medium">
                 <ArrowLeft className="h-4 w-4" />
-                Back to Dashboard
+                {user ? 'Back to Dashboard' : 'Back to Home'}
               </Link>
             </div>
           </div>
@@ -204,9 +213,6 @@ export default function BusinessCampaignPage() {
             <p className="text-brand-gray mb-6 leading-relaxed">
               We can&apos;t wait to help get your business discovered — and create some incredible content along the way.
             </p>
-            <p className="text-sm text-amber-800 bg-amber-50/80 border border-amber-200 rounded-xl px-4 py-3 mb-6">
-              This experience is in development. Your submission was recorded locally.
-            </p>
             <button
               type="button"
               onClick={downloadReceipt}
@@ -219,10 +225,10 @@ export default function BusinessCampaignPage() {
               Our team will review your submission and follow up with next steps shortly.
             </p>
             <Link
-              href="/dashboard"
+              href={user ? '/dashboard' : '/'}
               className="inline-flex items-center gap-2 text-brand-pink font-semibold hover:underline"
             >
-              Return to Dashboard
+              {user ? 'Return to Dashboard' : 'Return to Home'}
             </Link>
           </div>
         </main>
@@ -238,9 +244,9 @@ export default function BusinessCampaignPage() {
             <Link href="/" className="flex items-center">
               <img src="/logo.svg" alt="Doozi" className="h-10 sm:h-12 w-auto" />
             </Link>
-            <Link href="/dashboard" className="flex items-center gap-2 text-sm font-medium text-brand-gray hover:text-brand-pink transition-colors py-2 px-3 rounded-lg hover:bg-gray-50">
+            <Link href={user ? '/dashboard' : '/'} className="flex items-center gap-2 text-sm font-medium text-brand-gray hover:text-brand-pink transition-colors py-2 px-3 rounded-lg hover:bg-gray-50">
               <ArrowLeft className="h-4 w-4" />
-              Back to Dashboard
+              {user ? 'Back to Dashboard' : 'Back to Home'}
             </Link>
           </div>
         </div>
@@ -357,9 +363,11 @@ export default function BusinessCampaignPage() {
                 <input
                   id="phone"
                   type="tel"
+                  inputMode="tel"
                   value={form.phone}
-                  onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))}
+                  onChange={(e) => setForm((f) => ({ ...f, phone: onlyPhone(e.target.value) }))}
                   className={`input py-3 rounded-xl ${errors.phone ? 'border-red-500 focus:ring-red-500/20' : ''}`}
+                  placeholder="e.g. +1 234 567 8900"
                 />
                 {errors.phone && <p className="mt-1.5 text-sm text-red-500">{errors.phone}</p>}
               </div>
@@ -383,10 +391,11 @@ export default function BusinessCampaignPage() {
                 <input
                   id="inKindValue"
                   type="text"
+                  inputMode="decimal"
                   value={form.inKindValue}
-                  onChange={(e) => setForm((f) => ({ ...f, inKindValue: e.target.value }))}
+                  onChange={(e) => setForm((f) => ({ ...f, inKindValue: onlyCurrency(e.target.value) }))}
                   className={`input py-3 rounded-xl ${errors.inKindValue ? 'border-red-500 focus:ring-red-500/20' : ''}`}
-                  placeholder="e.g. $200 value"
+                  placeholder="e.g. $200 or 200"
                 />
                 {errors.inKindValue && <p className="mt-1.5 text-sm text-red-500">{errors.inKindValue}</p>}
               </div>
@@ -400,16 +409,6 @@ export default function BusinessCampaignPage() {
                     <input
                       type="radio"
                       name="paidOption"
-                      checked={form.paidCompensationOption === 'not_offering'}
-                      onChange={() => setForm((f) => ({ ...f, paidCompensationOption: 'not_offering' }))}
-                      className="w-4 h-4 text-brand-pink focus:ring-brand-pink"
-                    />
-                    <span className="text-sm">Not offering paid compensation</span>
-                  </label>
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input
-                      type="radio"
-                      name="paidOption"
                       checked={form.paidCompensationOption === 'amount'}
                       onChange={() => setForm((f) => ({ ...f, paidCompensationOption: 'amount' }))}
                       className="w-4 h-4 text-brand-pink focus:ring-brand-pink"
@@ -417,12 +416,23 @@ export default function BusinessCampaignPage() {
                     <span className="text-sm">Enter amount:</span>
                     <input
                       type="text"
+                      inputMode="decimal"
                       value={form.paidCompensation}
-                      onChange={(e) => setForm((f) => ({ ...f, paidCompensation: e.target.value }))}
+                      onChange={(e) => setForm((f) => ({ ...f, paidCompensation: onlyCurrency(e.target.value) }))}
                       className={`input py-2 rounded-lg max-w-[120px] text-sm ${errors.paidCompensation ? 'border-red-500' : ''}`}
                       placeholder="e.g. $100"
                       disabled={form.paidCompensationOption !== 'amount'}
                     />
+                  </label>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="paidOption"
+                      checked={form.paidCompensationOption === 'not_offering'}
+                      onChange={() => setForm((f) => ({ ...f, paidCompensationOption: 'not_offering' }))}
+                      className="w-4 h-4 text-brand-pink focus:ring-brand-pink"
+                    />
+                    <span className="text-sm">Not offering paid compensation</span>
                   </label>
                 </div>
                 {errors.paidCompensation && <p className="mt-1.5 text-sm text-red-500">{errors.paidCompensation}</p>}
@@ -566,16 +576,6 @@ export default function BusinessCampaignPage() {
               <h2 className="text-lg font-bold text-brand-black">Final Confirmation</h2>
             </div>
             <div className="space-y-4">
-              <label className="flex items-start gap-3 p-4 rounded-xl border border-gray-100 hover:border-gray-200 cursor-pointer transition-colors">
-                <input
-                  type="checkbox"
-                  checked={form.confirmIndependent}
-                  onChange={(e) => setForm((f) => ({ ...f, confirmIndependent: e.target.checked }))}
-                  className="mt-0.5 h-5 w-5 rounded text-brand-pink focus:ring-brand-pink"
-                />
-                <span className="text-sm text-brand-black">I understand that creators are independent and that content reach and performance cannot be guaranteed.</span>
-              </label>
-              {errors.confirmIndependent && <p className="text-sm text-red-500 -mt-2">{errors.confirmIndependent}</p>}
               <label className="flex items-start gap-3 p-4 rounded-xl border border-gray-100 hover:border-gray-200 cursor-pointer transition-colors">
                 <input
                   type="checkbox"
