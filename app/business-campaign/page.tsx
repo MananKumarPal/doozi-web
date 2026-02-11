@@ -167,7 +167,7 @@ export default function BusinessCampaignPage() {
   <div class="section">
     <h2>Campaign investment</h2>
     <div class="row"><span class="label">In-kind value</span><span class="value">${(receipt?.inKindValue || '—').replace(/</g, '&lt;')}</span></div>
-    <div class="row"><span class="label">Paid compensation</span><span class="value">${(receipt?.paidCompensation || 'Not offering').replace(/</g, '&lt;')}</span></div>
+    <div class="row"><span class="label">Campaign Production Budget</span><span class="value">${(receipt?.paidCompensation || 'Not offering').replace(/</g, '&lt;')}</span></div>
   </div>
   <div class="section">
     <h2>Content</h2>
@@ -400,9 +400,9 @@ export default function BusinessCampaignPage() {
                 {errors.inKindValue && <p className="mt-1.5 text-sm text-red-500">{errors.inKindValue}</p>}
               </div>
               <div>
-                <label className="block text-sm font-semibold text-brand-black mb-2">Optional: Paid Creator Compensation</label>
+                <label className="block text-sm font-semibold text-brand-black mb-2">Optional: Campaign Production Budget</label>
                 <p className="text-xs text-brand-gray mb-3">
-                  Not required; paid compensation increases reach and helps match you with creators who have larger audiences.
+                  An optional budget that allows Doozi to source, manage, and deliver campaigns with higher-reach production. This budget supports campaign production and creator management handled entirely by Doozi.
                 </p>
                 <div className="flex flex-wrap items-center gap-4">
                   <label className="flex items-center gap-2 cursor-pointer">
@@ -432,7 +432,7 @@ export default function BusinessCampaignPage() {
                       onChange={() => setForm((f) => ({ ...f, paidCompensationOption: 'not_offering' }))}
                       className="w-4 h-4 text-brand-pink focus:ring-brand-pink"
                     />
-                    <span className="text-sm">Not offering paid compensation</span>
+                    <span className="text-sm">Not including budget</span>
                   </label>
                 </div>
                 {errors.paidCompensation && <p className="mt-1.5 text-sm text-red-500">{errors.paidCompensation}</p>}

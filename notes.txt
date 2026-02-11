@@ -17,5 +17,5 @@ Run linter:
 npm run lint
 
 Environment variable:
-Create .env file with: BASE_URL=https://doozi-app-463323.uc.r.appspot.com
+Create .env file with: BASE_URL=https://core-incentive-479214-p2.uc.r.appspot.com
 //

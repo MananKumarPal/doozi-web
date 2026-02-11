@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-const API_URL = process.env.BASE_URL || 'https://doozi-app-463323.uc.r.appspot.com';
+const API_URL = process.env.BASE_URL || 'https://core-incentive-479214-p2.uc.r.appspot.com';
 
 export const dynamic = 'force-dynamic';
 
