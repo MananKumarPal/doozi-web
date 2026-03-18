@@ -11,12 +11,12 @@ export async function generateMetadata({ params }: { params: { id: string } }): 
     openGraph: {
       title: 'Watch on Doozi',
       description: 'Download the Doozi app to watch this video.',
-      url: `${BASE_URL}/video/${params.id}`,
+      url: `${BASE_URL}/videos/${params.id}`,
     },
   };
 }
 
-export default function VideoRedirectPage({ params }: { params: { id: string } }) {
+export default function VideosRedirectPage({ params }: { params: { id: string } }) {
   return (
     <DownloadAppPrompt
       title="Watch this video in the app"
