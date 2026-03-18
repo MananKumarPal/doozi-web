@@ -1,0 +1,15 @@
+[
+  {
+    "relation": [
+      "delegate_permission/common.handle_all_urls"
+    ],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.doozi.app",
+      "sha256_cert_fingerprints": [
+        "0c:c0:67:97:e0:e2:b1:eb:97:77:af:13:62:19:b6:04:f4:09:cd:d1:0b:94:93:af:07:65:5f:b1:9d:db:c5:b0",
+        "89:73:0e:55:94:66:02:10:b9:cd:bf:ea:c3:33:d3:48:5c:11:5b:eb:7e:c5:c4:25:5e:b6:7c:28:44:8a:7a:6b"
+      ]
+    }
+  }
+]
