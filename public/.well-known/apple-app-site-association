@@ -8,6 +8,7 @@
           "NOT /__/auth/action/",
           "NOT /__/auth/handler/",
           "NOT /_/*",
+          "NOT /auth/reset-password*",
           "/*"
         ]
       }
