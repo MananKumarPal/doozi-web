@@ -44,7 +44,7 @@ export default function TermsPage() {
               We may remove or restrict content, suspend or terminate accounts, and cooperate with law enforcement where appropriate, at our sole discretion and without prior notice when we believe a violation has occurred or to protect the safety and integrity of our community.
             </p>
             <p className="text-brand-gray mb-6">
-              If you see content or behavior that violates these terms, please report it through the in-app reporting tools or contact us at legal@doozi.tv. We take reports seriously and will take action we consider appropriate, which may include removal of content and permanent suspension of abusive accounts.
+              If you see content or behavior that violates these terms, please report it through the in-app reporting tools or contact us at hello@doozi.app. We take reports seriously and will take action we consider appropriate, which may include removal of content and permanent suspension of abusive accounts.
             </p>
 
             <h2 className="text-2xl font-bold text-brand-black mt-8 mb-4">3. Use License</h2>
@@ -88,7 +88,7 @@ export default function TermsPage() {
 
             <h2 className="text-2xl font-bold text-brand-black mt-8 mb-4">9. Contact Us</h2>
             <p className="text-brand-gray mb-6">
-              If you have any questions about these Terms, please contact us at: legal@doozi.tv
+              If you have any questions about these Terms, please contact us at: hello@doozi.app
             </p>
           </div>
         </div>

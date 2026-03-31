@@ -144,7 +144,7 @@ export default function PrivacyPage() {
               <li>The right not to receive discriminatory treatment for exercising privacy rights</li>
             </ul>
             <p className="text-brand-gray mb-6">
-              To exercise these rights, contact us at hello@doozi. We may verify your request before responding. You may designate an authorized agent to make a request on your behalf where permitted by law.
+              To exercise these rights, contact us at hello@doozi.app. We may verify your request before responding. You may designate an authorized agent to make a request on your behalf where permitted by law.
             </p>
 
             <h2 className="text-2xl font-bold text-brand-black mt-8 mb-4">11. European Economic Area, United Kingdom, and Switzerland</h2>
@@ -155,7 +155,7 @@ export default function PrivacyPage() {
               You may have the right to access, rectify, erase, restrict, or object to certain processing, and to data portability, in each case subject to applicable law. You may also lodge a complaint with a data protection authority in your country or region.
             </p>
             <p className="text-brand-gray mb-6">
-              To exercise these rights, contact us at hello@doozi.
+              To exercise these rights, contact us at hello@doozi.app.
             </p>
 
             <h2 className="text-2xl font-bold text-brand-black mt-8 mb-4">12. Changes to this policy</h2>
@@ -165,7 +165,7 @@ export default function PrivacyPage() {
 
             <h2 className="text-2xl font-bold text-brand-black mt-8 mb-4">13. Contact us</h2>
             <p className="text-brand-gray mb-6">
-              If you have any questions about this Privacy Policy, please contact us at: hello@doozi
+              If you have any questions about this Privacy Policy, please contact us at: hello@doozi.app
             </p>
           </div>
         </div>
